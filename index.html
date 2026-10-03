@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Education Study Tracker</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f5f6f8;
+        color: #1f2937;
+        line-height: 1.4;
+    }
+
+    .container {
+        width: min(100% - 24px, 760px);
+        margin: auto;
+        padding: 20px 0 40px;
+    }
+
+    /* Header */
+    header {
+        margin-bottom: 18px;
+    }
+
+    h1 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+        color: #6b7280;
+        font-size: 13px;
+        margin-top: 3px;
+    }
+
+    /* Overall progress */
+    .progress-box {
+        background: white;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 18px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .progress-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 9px;
+    }
+
+    .progress-label {
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .percentage {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: #2563eb;
+        border-radius: inherit;
+        transition: width 0.25s ease;
+    }
+
+    .count {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 8px;
+    }
+
+    /* Unit */
+    .unit {
+        margin-bottom: 18px;
+    }
+
+    .unit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .unit-title {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .unit-count {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    /* Topic */
+    .topic {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 7px;
+        overflow: hidden;
+    }
+
+    .topic-main {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 13px;
+        cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        border: 2px solid #cbd5e1;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    input[type="checkbox"]:checked {
+        background: #2563eb;
+        border-color: #2563eb;
+    }
+
+    input[type="checkbox"]:checked::after {
+        content: "✓";
+        color: white;
+        font-size: 14px;
+        position: absolute;
+        left: 3px;
+        top: -1px;
+        font-weight: 700;
+    }
+
+    .topic-name {
+        font-size: 14px;
+        flex: 1;
+    }
+
+    .topic.completed .topic-name {
+        color: #9ca3af;
+        text-decoration: line-through;
+    }
+
+    /* Subtopics */
+    .subtopics {
+        padding: 0 13px 12px 44px;
+        display: none;
+    }
+
+    .topic.open .subtopics {
+        display: block;
+    }
+
+    .subtopic {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 0;
+        font-size: 13px;
+        color: #4b5563;
+    }
+
+    .subtopic input {
+        width: 16px;
+        height: 16px;
+        min-width: 16px;
+        border-radius: 4px;
+    }
+
+    .expand {
+        font-size: 13px;
+        color: #9ca3af;
+        padding: 4px;
+    }
+
+    /* Reset */
+    .reset {
+        display: block;
+        margin: 20px auto 0;
+        border: 0;
+        background: transparent;
+        color: #9ca3af;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .reset:hover {
+        color: #ef4444;
+    }
+
+    /* Mobile */
+    @media (max-width: 500px) {
+        .container {
+            width: min(100% - 16px, 760px);
+            padding-top: 15px;
+        }
+
+        h1 {
+            font-size: 21px;
+        }
+
+        .progress-box {
+            padding: 14px;
+            border-radius: 12px;
+        }
+
+        .topic-main {
+            padding: 12px;
+        }
+
+        .topic-name {
+            font-size: 13px;
+        }
+
+        .subtopics {
+            padding-left: 42px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Education — Study Tracker</h1>
+        <div class="subtitle">Commissions, Policies & NEP</div>
+    </header>
+
+    <!-- Overall Progress -->
+    <div class="progress-box">
+        <div class="progress-top">
+            <span class="progress-label">Overall progress</span>
+            <span class="percentage" id="percentage">0%</span>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="count" id="count">0 of 0 completed</div>
+    </div>
+
+
+    <!-- UNIT 1 -->
+    <section class="unit">
+
+        <div class="unit-header">
+            <div class="unit-title">Unit 1</div>
+            <div class="unit-count" id="unit1Count"></div>
+        </div>
+
+        <div id="unit1">
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="radhakrishnan">
+                    <span class="topic-name">
+                        University Education Commission (1948–49)
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="radhakrishnan1">
+                        Major recommendations on higher education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="radhakrishnan2">
+                        University education objectives
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="radhakrishnan3">
+                        Teaching, research & examination reforms
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="radhakrishnan4">
+                        Teacher quality & university autonomy
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="mudaliar">
+                    <span class="topic-name">
+                        Secondary Education Commission (1952–53)
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="mudaliar1">
+                        Major recommendations
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="mudaliar2">
+                        Multipurpose schools
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="mudaliar3">
+                        Vocational education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="mudaliar4">
+                        Curriculum & examination reforms
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="ugc">
+                    <span class="topic-name">
+                        University Grants Commission
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="ugc1">
+                        UGC established — 1953
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="ugc2">
+                        UGC Act — 1956
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="ugc3">
+                        Grant-giving agency
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="ugc4">
+                        Determination & maintenance of standards
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="kothari">
+                    <span class="topic-name">
+                        Kothari Commission (1964–66)
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="kothari1">
+                        10+2+3 structure
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="kothari2">
+                        Three-language formula
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="kothari3">
+                        Common School System
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="kothari4">
+                        Equal educational opportunity
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="kothari5">
+                        Vocationalisation & work experience
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="kothari6">
+                        Major recommendations & reforms
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="knowledge">
+                    <span class="topic-name">
+                        National Knowledge Commission (2005–09)
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="knowledge1">
+                        Higher education reforms
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="knowledge2">
+                        Quality & expansion of higher education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="knowledge3">
+                        Vocational education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="knowledge4">
+                        Libraries & knowledge networks
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="knowledge5">
+                        Major recommendations — 2006 & 2009
+                    </label>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- UNIT 2 -->
+    <section class="unit">
+
+        <div class="unit-header">
+            <div class="unit-title">Unit 2</div>
+            <div class="unit-count" id="unit2Count"></div>
+        </div>
+
+        <div id="unit2">
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="npe1968">
+                    <span class="topic-name">
+                        National Policy on Education — 1968
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19681">
+                        Elementary education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19682">
+                        Equal educational opportunity
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19683">
+                        Women & SC/ST education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19684">
+                        Three-language formula
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19685">
+                        Higher education & rural education
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="npe1986">
+                    <span class="topic-name">
+                        National Policy on Education — 1986
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19861">
+                        National System of Education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19862">
+                        Equal educational opportunity
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19863">
+                        Women, SC/ST & disadvantaged groups
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19864">
+                        Operation Blackboard
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19865">
+                        Navodaya Vidyalayas
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="npe19866">
+                        Vocational & adult education
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="poa">
+                    <span class="topic-name">
+                        Programme of Action — 1992
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="poa1">
+                        Background & objectives
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="poa2">
+                        Elementary education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="poa3">
+                        Women & adult education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="poa4">
+                        Teacher & higher education
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="rpf">
+                    <span class="topic-name">
+                        Revised Policy Formulations — 1992
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="rpf1">
+                        Major reforms
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="rpf2">
+                        Decentralisation
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="rpf3">
+                        Access, equity & quality
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="rpf4">
+                        Higher & vocational education reforms
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="cmp">
+                    <span class="topic-name">
+                        Common Minimum Programme — 2005
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="cmp1">
+                        Universalisation of elementary education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="cmp2">
+                        Access & quality
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="cmp3">
+                        Equity & disadvantaged groups
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="yashpal">
+                    <span class="topic-name">
+                        Yashpal Committee — 1993
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="yashpal1">
+                        Learning Without Burden
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="yashpal2">
+                        Reduce curriculum load
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="yashpal3">
+                        Reduce rote learning
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="yashpal4">
+                        Child-centred learning
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="yashpal5">
+                        Major recommendations
+                    </label>
+
+                </div>
+            </div>
+
+
+            <div class="topic">
+                <label class="topic-main">
+                    <input type="checkbox" data-topic="nep2020">
+                    <span class="topic-name">
+                        National Education Policy — 2020
+                    </span>
+                    <span class="expand">+</span>
+                </label>
+
+                <div class="subtopics">
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep1">
+                        5+3+3+4 structure
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep2">
+                        Foundational Literacy & Numeracy
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep3">
+                        Multilingual education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep4">
+                        Vocational education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep5">
+                        Multidisciplinary higher education
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep6">
+                        Multiple Entry & Exit
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep7">
+                        Academic Bank of Credits
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep8">
+                        National Research Foundation
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep9">
+                        HECI
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep10">
+                        Teacher education reforms
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep11">
+                        Educational technology
+                    </label>
+
+                    <label class="subtopic">
+                        <input type="checkbox" data-topic="nep12">
+                        50% GER in higher education by 2035
+                    </label>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <button class="reset" onclick="resetProgress()">
+        Reset progress
+    </button>
+
+</div>
+
+
+<script>
+
+const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+/* Load saved progress */
+checkboxes.forEach(box => {
+
+    const saved = localStorage.getItem("study_" + box.dataset.topic);
+
+    if (saved === "true") {
+        box.checked = true;
+    }
+
+    box.addEventListener("change", updateProgress);
+});
+
+
+/* Expand / collapse topics */
+document.querySelectorAll(".topic-main").forEach(main => {
+
+    main.addEventListener("click", function(e) {
+
+        if (e.target.type === "checkbox") return;
+
+        const topic = this.closest(".topic");
+
+        topic.classList.toggle("open");
+
+        const icon = this.querySelector(".expand");
+
+        icon.textContent =
+            topic.classList.contains("open") ? "−" : "+";
+    });
+});
+
+
+/* Update parent topic when subtopics change */
+document.querySelectorAll(".subtopics input").forEach(sub => {
+
+    sub.addEventListener("change", function() {
+
+        const topic = this.closest(".topic");
+
+        const children =
+            topic.querySelectorAll(".subtopics input");
+
+        const parent =
+            topic.querySelector(".topic-main input");
+
+        const completed =
+            [...children].filter(x => x.checked).length;
+
+        /*
+        Parent checkbox becomes checked only
+        when all subtopics are completed.
+        */
+        parent.checked =
+            completed === children.length;
+
+        localStorage.setItem(
+            "study_" + parent.dataset.topic,
+            parent.checked
+        );
+
+        updateProgress();
+    });
+});
+
+
+/* Main progress calculation */
+function updateProgress() {
+
+    let total = 0;
+    let completed = 0;
+
+    checkboxes.forEach(box => {
+
+        total++;
+
+        if (box.checked) {
+            completed++;
+        }
+
+        localStorage.setItem(
+            "study_" + box.dataset.topic,
+            box.checked
+        );
+
+        const topic = box.closest(".topic");
+
+        if (topic) {
+
+            const mainCheckbox =
+                topic.querySelector(".topic-main input");
+
+            if (mainCheckbox === box) {
+
+                if (box.checked)
+                    topic.classList.add("completed");
+                else
+                    topic.classList.remove("completed");
+            }
+        }
+    });
+
+
+    const percent =
+        total === 0
+        ? 0
+        : Math.round((completed / total) * 100);
+
+
+    document.getElementById("percentage")
+        .textContent = percent + "%";
+
+    document.getElementById("progressFill")
+        .style.width = percent + "%";
+
+    document.getElementById("count")
+        .textContent =
+        completed + " of " + total + " completed";
+
+
+    updateUnitProgress("unit1", "unit1Count");
+    updateUnitProgress("unit2", "unit2Count");
+}
+
+
+/* Unit progress */
+function updateUnitProgress(unitId, displayId) {
+
+    const unit =
+        document.getElementById(unitId);
+
+    const boxes =
+        unit.querySelectorAll('input[type="checkbox"]');
+
+    const total = boxes.length;
+
+    const completed =
+        [...boxes].filter(x => x.checked).length;
+
+    document.getElementById(displayId)
+        .textContent =
+        completed + "/" + total;
+}
+
+
+/* Reset */
+function resetProgress() {
+
+    if (!confirm("Reset all study progress?")) {
+        return;
+    }
+
+    checkboxes.forEach(box => {
+
+        box.checked = false;
+
+        localStorage.removeItem(
+            "study_" + box.dataset.topic
+        );
+
+        const topic = box.closest(".topic");
+
+        if (topic) {
+            topic.classList.remove("completed");
+        }
+    });
+
+    updateProgress();
+}
+
+
+/* Initial calculation */
+updateProgress();
+
+</script>
+
+</body>
+</html>
